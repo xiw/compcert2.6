@@ -60,7 +60,7 @@ FLOCQ=\
   Fcalc_round.v Fcalc_sqrt.v                                                \
   Fprop_div_sqrt_error.v Fprop_mult_error.v Fprop_plus_error.v              \
   Fprop_relative.v Fprop_Sterbenz.v                                         \
-  Fappli_rnd_odd.v Fappli_IEEE.v Fappli_IEEE_bits.v
+  Fappli_rnd_odd.v Fappli_double_round.v Fappli_IEEE.v Fappli_IEEE_bits.v
 
 # General-purpose libraries (in lib/)
 
