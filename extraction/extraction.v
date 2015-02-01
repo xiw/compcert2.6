@@ -159,4 +159,5 @@ Separate Extraction
    Machregs.mregs_for_operation Machregs.mregs_for_builtin
    Machregs.two_address_op Machregs.is_stack_reg
    AST.signature_main
+   Floats.Float32.from_parsed Floats.Float.from_parsed
    Parser.translation_unit_file.
