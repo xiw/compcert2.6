@@ -132,7 +132,7 @@ module Linux_System : SYSTEM =
 
 
     let print_file_line oc file line =
-      PrintAnnot.print_file_line oc comment file line
+      print_file_line oc comment file line
     
     (* Emit .cfi directives *)      
     let cfi_startproc = cfi_startproc
@@ -203,7 +203,7 @@ module Diab_System : SYSTEM =
       | Section_debug_abbrev -> ".debug_abbrev,,n"
 
     let print_file_line oc file line =
-      PrintAnnot.print_file_line_d2 oc comment file line
+      print_file_line_d2 oc comment file line
 
     (* Emit .cfi directives *)
     let cfi_startproc oc = ()
@@ -240,10 +240,10 @@ module Diab_System : SYSTEM =
           end_addr := label_end;
           fprintf oc "%a:\n" label label_end;
           fprintf oc "	.text\n";
-          PrintAnnot.StringSet.iter (fun file ->
+          StringSet.iter (fun file ->
             let label = new_label () in
             Hashtbl.add filenum file label;
-            fprintf oc ".L%d:	.d2filenum \"%s\"\n" label file) !PrintAnnot.all_files;
+            fprintf oc ".L%d:	.d2filenum \"%s\"\n" label file) !all_files;
           fprintf oc "	.d2_line_end\n"
         end
 
@@ -284,10 +284,14 @@ module Target (System : SYSTEM):TARGET =
     let ireg_or_zero oc r =
       if r = GPR0 then output_string oc "0" else ireg oc r
 
-    (* [preg] is only used for printing annotations.
-       Use the full register names [rN] and [fN] to avoid
-       ambiguity with constants. *)
     let preg oc = function
+      | IR r -> ireg oc r
+      | FR r -> freg oc r
+      | _    -> assert false
+
+    (* For printing annotations, use the full register names [rN] and [fN]
+       to avoid ambiguity with constants. *)
+    let preg_annot oc = function
       | IR r -> fprintf oc "r%s" (int_reg_name r)
       | FR r -> fprintf oc "f%s" (float_reg_name r)
       | _    -> assert false
@@ -327,7 +331,7 @@ module Target (System : SYSTEM):TARGET =
           (int_of_string (Str.matched_group 2 txt))
       end else begin
         fprintf oc "%s annotation: " comment;
-        PrintAnnot.print_annot_stmt preg "R1" oc txt targs args
+        print_annot_stmt preg_annot "R1" oc txt targs args
       end
 
     (* Determine if the displacement of a conditional branch fits the short form *)
@@ -646,9 +650,9 @@ module Target (System : SYSTEM):TARGET =
           fprintf oc "%a:\n" label (transl_label lbl)
       | Pbuiltin(ef, args, res) ->
           begin match ef with
-          | EF_inline_asm txt ->
-              fprintf oc "%s begin inline assembly\n" comment;
-              fprintf oc "	%s\n" (extern_atom txt);
+          | EF_inline_asm(txt, sg, clob) ->
+              fprintf oc "%s begin inline assembly\n\t" comment;
+              print_inline_asm preg oc (extern_atom txt) sg args res;
               fprintf oc "%s end inline assembly\n" comment
           | _ ->
               assert false
