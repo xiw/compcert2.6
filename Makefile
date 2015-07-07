@@ -26,7 +26,7 @@ COQINCLUDES=$(foreach d, $(RECDIRS), -R $(d) compcert.$(d))
 CAMLINCLUDES=$(patsubst %,-I %, $(DIRS)) -I extraction
 
 MENHIR=menhir
-COQC="$(COQBIN)coqc" -no-native-compiler -q $(COQINCLUDES)
+COQC="$(COQBIN)coqc" -q $(COQINCLUDES)
 COQDEP="$(COQBIN)coqdep" $(COQINCLUDES)
 COQDOC="$(COQBIN)coqdoc"
 COQEXEC="$(COQBIN)coqtop" $(COQINCLUDES) -batch -load-vernac-source
