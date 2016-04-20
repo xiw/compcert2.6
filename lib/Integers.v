@@ -1103,6 +1103,62 @@ Proof.
   apply eqm_mult; apply eqm_sym; apply eqm_signed_unsigned.
 Qed.
 
+(** ** Add-Mul ring *)
+
+Lemma add_assoc_r:
+  forall x y z, add x (add y z) = add (add x y) z.
+Proof.
+  intros.
+  rewrite add_assoc.
+  auto.
+Qed.
+
+Lemma mul_one_l: forall x, mul one x = x.
+Proof.
+  intros.
+  rewrite mul_commut.
+  apply mul_one.
+Qed.
+
+Lemma mul_assoc_r:
+  forall x y z, mul x (mul y z) = mul (mul x y) z.
+Proof.
+  intros.
+  rewrite mul_assoc.
+  auto.
+Qed.
+
+Definition add_mul_ring : ring_theory zero one add mul sub neg Logic.eq :=
+  mk_rt _ _ _ _ _ _ _
+  add_zero_l add_commut add_assoc_r
+  mul_one_l mul_commut mul_assoc_r
+  mul_add_distr_l sub_add_opp add_neg_zero.
+
+Lemma eq_ok:
+  forall x y, eq x y = true -> x = y.
+Proof.
+  intros.
+  pose proof (eq_spec x y).
+  replace (eq x y) with true in *.
+  auto.
+Qed.
+
+Ltac isIntegercst t :=
+  match t with
+  | repr ?z => isZcst z (* injection Z -> integer *)
+  | zero => constr:true
+  | one => constr:true
+  | mone => constr:true
+  | iwordsize => constr:true
+  | _ => constr:false
+  end.
+
+Ltac Integercst t :=
+  match isIntegercst t with
+  | true => t
+  | _ => constr:NotConstant
+  end.
+
 (** ** Properties of division and modulus *)
 
 Lemma modu_divu_Euclid:
@@ -4436,3 +4492,6 @@ Strategy 0 [Wordsize_64.wordsize].
 Notation int64 := Int64.int.
 
 Global Opaque Int.repr Int64.repr Byte.repr.
+
+Add Ring int_add_mul_ring : Int.add_mul_ring (constants [Int.Integercst], decidable Int.eq_ok).
+Add Ring int64_add_mul_ring : Int64.add_mul_ring (constants [Int64.Integercst], decidable Int64.eq_ok).
